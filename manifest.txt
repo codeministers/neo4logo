@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Extension-Name: neo4logo
+Class-Manager: Neo4LogoExtension
+NetLogo-Extension-API-Version: 5.0
