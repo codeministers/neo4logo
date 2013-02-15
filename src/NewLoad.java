@@ -112,7 +112,7 @@ public class NewLoad extends DefaultCommand {
 
 			for(Relationship r : linksHits) {
 				
-				// Al hacerlo automático, los id no son id
+				// Al hacerlo automático, los id no son id, si no WHO
 				String id = nameVarTurtleBreeds.get("TURTLES")[0];
 				Turtle start = world.getTurtle(((Double) r.getStartNode().getProperty(id)).longValue());
 				Turtle end = world.getTurtle(((Double) r.getEndNode().getProperty(id)).longValue());
