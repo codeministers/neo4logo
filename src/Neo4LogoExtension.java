@@ -28,8 +28,8 @@ public class Neo4LogoExtension extends DefaultClassManager {
 		primitiveManager.addPrimitive("get-relationships", new GetRelationships());
 		
 		//New version methods
-		primitiveManager.addPrimitive("save-world", new SaveWorld());
-		primitiveManager.addPrimitive("load-world", new LoadWorld());
+		primitiveManager.addPrimitive("save-world", new NewSave());
+		primitiveManager.addPrimitive("load-world", new NewLoad());
 	}
 	
 }
