@@ -17,19 +17,22 @@ import org.nlogo.api.PrimitiveManager;
 public class Neo4LogoExtension extends DefaultClassManager {
 	
 	public void load(PrimitiveManager primitiveManager) {
-		//Essentials primitives
+		// Essential primitives
 		primitiveManager.addPrimitive("connect-db", new ConnectDB());
 		primitiveManager.addPrimitive("disconnect-db", new DisconnectDB());
 		
-		//Old version methods
+		// Old version methods
 		primitiveManager.addPrimitive("create-node", new CreateNode());
 		primitiveManager.addPrimitive("create-relationship", new CreateRelationship());
 		primitiveManager.addPrimitive("get-nodes", new GetNodes());
 		primitiveManager.addPrimitive("get-relationships", new GetRelationships());
 		
-		//New version methods
+		// New version methods
 		primitiveManager.addPrimitive("save-world", new NewSave());
 		primitiveManager.addPrimitive("load-world", new NewLoad());
+		
+		// Test
+		primitiveManager.addPrimitive("test", new Test());
 	}
 	
 }

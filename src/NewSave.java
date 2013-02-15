@@ -1,6 +1,4 @@
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.neo4j.graphdb.Node;
@@ -33,16 +31,18 @@ public class NewSave extends DefaultCommand {
 		AgentSet breedTurtles = world.turtles();
 		
 		// No se usan
-		// AgentSet breedDogs = world.getBreed("DOGS");
-		// AgentSet breedCats = world.getBreed("CATS");
+		//AgentSet breedDogs = world.getBreed("DOGS");
+		//AgentSet breedCats = world.getBreed("CATS");
 		
 		AgentSet breedLinks = world.links();
 		
+		// Ver que metemos en la transaccion y que no
 		Transaction tx = Helper.GRAPHDB.beginTx();
 		try {
-		
-			// Hacemos los indices para las turtles y las razas de turtles
+			
+			// Hacemos los indices para las turtles y las breeds de turtles
 			Index<Node> turtlesIndex = Helper.GRAPHDB.index().forNodes("TURTLES");
+			// Los indices de breeds seran para guardar o cargar solo esas 
 			Index<Node> dogsIndex = Helper.GRAPHDB.index().forNodes("DOGS");
 			Index<Node> catsIndex = Helper.GRAPHDB.index().forNodes("CATS");
 			
@@ -54,43 +54,57 @@ public class NewSave extends DefaultCommand {
 			// Hacemos el indice para los links
 			Index<Relationship> linksIndex = Helper.GRAPHDB.index().forRelationships("LINKS");
 			
-			// Aquí guardamos las razas y sus variables
-			Map<String, Object> mapTurtleBreeds = world.getBreeds();
-			List<String> listTurtleBreeds = new ArrayList<String>();
-			Map<String, String[]> nameVarsTurtleBreeds = new HashMap<String, String[]>();
+			// Aquí guardamos los nombres de las breeds con sus variables
+			Map<String, String[]> nameVarTurtleBreeds = new HashMap<String, String[]>();
 			
-			// Aquí hacemos lo de guardar las razas y sus variables
-			for(String s : mapTurtleBreeds.keySet()) {
-				// Guardamos el nombre de la breed
-				listTurtleBreeds.add(s);
-				
-				// Guardamos los nombres de las variables cada breed
-				// Se podría optimizar ya que las 13 primeras son las mismas
-				int variableNumber = world.getVariablesArraySize((Turtle)null, world.getBreed(s));
-				String[] variableNames = new String[variableNumber];
-				for (int i = 0; i < variableNumber; i++) {
-					variableNames[i] = world.breedsOwnNameAt(world.getBreed(s), i);
-		        }
-				
-				// Guardamos el nombre de las variables de la breed
-				nameVarsTurtleBreeds.put(s, variableNames);
+			// Para la breed TURTLE
+			int turtleVarNumber = world.getVariablesArraySize((Turtle) null, world.turtles());
+			String[] varNames = new String[turtleVarNumber];
+			
+			// Recorremos todas las variables de TURTLE
+			for(int i = 0; i < turtleVarNumber; i++) {
+				varNames[i] = world.turtlesOwnNameAt(i);
 			}
 			
-			// Guardamos cada turtle o raza
+			// Guardamos en el map
+			nameVarTurtleBreeds.put("TURTLES", varNames);
+			
+			
+			// Para el resto de breeds
+			for(String s : world.getBreeds().keySet()) {	
+				int varNumber = world.getVariablesArraySize((Turtle) null, world.getBreed(s));
+				varNames = new String[varNumber];
+				
+				for (int i = turtleVarNumber; i < varNumber; i++) {
+					varNames[i - turtleVarNumber] = world.breedsOwnNameAt(world.getBreed(s), i);
+		        }
+				
+				nameVarTurtleBreeds.put(s, varNames);
+			}
+			
+			// Guardamos cada turtle
 			for(Agent a : breedTurtles.agents()) {
 				Turtle t = (Turtle) a;
 				
 				Node node = Helper.GRAPHDB.createNode();
 				
 				// Metemos la raza
-				String breed = listTurtleBreeds.get(t.getBreedIndex());
-				node.setProperty("breed", breed);
+				// Mejor forma de conseguir el breed de una turtle (t.getBreed().printname();)
+				// y no por la lista que creamos y el indice de t.getBreedIndex();
+				String breed = t.getBreed().printName();
+				node.setProperty("BREED", breed);
 				
-				// Metemos todas las variables
-				for(int i = 0; i < t.variables().length; i++) {
+				// Metemos todas las variables de Turtle
+				for(int i = 0; i < turtleVarNumber; i++) {
 					if(i != 8) {
-						node.setProperty(nameVarsTurtleBreeds.get(breed)[i], t.getVariable(i));
+						node.setProperty(nameVarTurtleBreeds.get("TURTLES")[i], t.getVariable(i));
 					}
+				}
+				
+				// Metemos todas las variables de la breed
+				for(int i = turtleVarNumber; i < t.variables().length; i++) {
+					// El (- turtleVarNumber) es para que el primer i sea 0, el segundo 1, ...
+					node.setProperty(nameVarTurtleBreeds.get(breed)[i - turtleVarNumber], t.getVariable(i));
 				}
 				
 				turtlesIndex.add(node, "id", t.id());
